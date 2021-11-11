@@ -1,21 +1,35 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-var Lexer_1 = require("./Lexer");
+var Lexer_1 = require("./private/Lexer");
+var Parser_1 = require("./private/Parser");
 var Main = /** @class */ (function () {
     function Main(input) {
         this.input = input;
         this.lexer = new Lexer_1.Lexer(input);
-        this.tokenLexer = Array();
+        this.tokenLexer = { output: Array(), isValid: false };
+        console.log("Input: ");
+        console.log(this.input);
     }
     Main.prototype.runLexer = function () {
-        console.log("Lexical Analysis: ");
+        console.log("\nLexical Analysis: ");
         this.tokenLexer = this.lexer.lexer();
-        this.tokenLexer.map(function (tok) {
-            return console.log("[" + tok.str + ", " + tok.token + "]");
+        this.parser = new Parser_1.Parser(this.input, this.tokenLexer.output, this.tokenLexer.isValid);
+        this.tokenLexer.output.map(function (tok) {
+            return console.log("[" + tok.input + ", " + tok.token + "]");
         });
+        if (!this.tokenLexer.isValid) {
+            console.log("Compiler has stopped reading...");
+        }
+    };
+    Main.prototype.runParser = function () {
+        console.log("\nSyntax Analysis: ");
+        console.log("stack\t\tinput\t\taction");
+        this.parser.main();
+        console.log("\n");
     };
     return Main;
 }());
-var input = "hootjaja hoot woo hu hu hoot yeet";
+var input = "hoot hoot woo ";
 var main = new Main(input);
 main.runLexer();
+main.runParser();

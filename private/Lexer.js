@@ -13,32 +13,29 @@ var Lexer = /** @class */ (function () {
         this.token = new Token_1.Token();
     }
     Lexer.prototype.lexer = function () {
-        this.tokenize = this.input.match(this.regex) || [];
-        this.backup = this.input.split(" ");
+        //this.tokenize = (this.input.match(this.regex) || []).filter(b => b);
+        this.tokenize = this.input.split(" ").filter(function (b) { return b; });
         for (var i = 0; i < this.tokenize.length; i++) {
             if (this.tokenize[i].includes(this.token.getOwlNoiseVal(0))) {
-                this.output.push({ str: this.tokenize[i].trim(), token: this.token.getOwlNoiseTok(0) });
-                break;
+                this.output.push({ input: this.token.getOwlNoiseVal(0), token: this.token.getOwlNoiseTok(0) });
             }
             else if (this.tokenize[i].includes(this.token.getOwlNoiseVal(1))) {
-                this.output.push({ str: this.tokenize[i].trim(), token: this.token.getOwlNoiseTok(1) });
-                break;
+                this.output.push({ input: this.token.getOwlNoiseVal(1), token: this.token.getOwlNoiseTok(1) });
             }
             else if (this.tokenize[i].includes(this.token.getOwlNoiseVal(2))) {
-                this.output.push({ str: this.tokenize[i].trim(), token: this.token.getOwlNoiseTok(2) });
-                break;
+                this.output.push({ input: this.token.getOwlNoiseVal(2), token: this.token.getOwlNoiseTok(2) });
             }
             else {
-                this.error.push({ str: this.backup[i].trim(), token: "UNKNOWN" });
+                this.error.push({ input: this.tokenize[i], token: "UNKNOWN" });
                 break;
             }
         }
-        if (this.error.length > 0) {
-            console.log("Error! Unknown token(s) found in the input.");
-            return this.error;
+        if (this.error.length == 0) {
+            return { output: this.output, isValid: true };
         }
         else {
-            return this.output;
+            console.log("Error! Unknown token(s) found in the input.");
+            return { output: this.error, isValid: false };
         }
     };
     return Lexer;
