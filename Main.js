@@ -23,13 +23,13 @@ var Main = /** @class */ (function () {
     };
     Main.prototype.runParser = function () {
         console.log("\nSyntax Analysis: ");
-        console.log("stack\t\tinput\t\taction");
+        console.log("stack\t\t\t\tinput\t\t\t\taction");
         this.parser.main();
         console.log("\n");
     };
     return Main;
 }());
-var input = "hoot hoot woo ";
+var input = "hoot hu";
 var main = new Main(input);
 main.runLexer();
 main.runParser();

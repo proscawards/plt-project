@@ -23,3 +23,13 @@ export interface ActionToken{
     shift: String,
     reduce: String
 }
+
+export interface ActionVal{
+    actionStr: String,
+    actionInt: any
+}
+
+export interface StackData{
+    stack: String,
+    action: ActionVal
+}

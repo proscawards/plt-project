@@ -29,14 +29,14 @@ class Main{
 
     runParser(){
         console.log("\nSyntax Analysis: ");
-        console.log("stack\t\tinput\t\taction");
+        console.log("stack\t\t\t\tinput\t\t\t\taction");
         this.parser.main();
         console.log("\n");
     }
     
 }
 
-let input = "hoot hoot woo ";
+let input = "hoot hu";
 let main = new Main(input);
 main.runLexer();
 main.runParser();

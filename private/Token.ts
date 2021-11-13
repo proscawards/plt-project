@@ -24,13 +24,13 @@ interface Owl{
 }
 
 export class Token implements Owl{
-    OWL_HOOT = {token: "OWL_HOOT", value: "hoot"};
-    OWL_BARK = {token: "OWL_BARK", value: "hu"};
-    OWL_WHISTLE = {token: "OWL_WHISTLE", value: "woo"};
-    OWL_BARRED = {token: "OWL_BARRED", value: "<OWL_WHISTLE><OWL_BARK>"};
-    OWL_BOREAL = {token: "OWL_BOREAL", value: "<OWL_BARK><OWL_BARK><OWL_BARK><OWL_BARK><OWL_BARK>"};
-    OWL_ESCREECH = {token: "OWL_ESCREECH", value: "<OWL_BARK><OWL_WHISTLE><OWL_WHISTLE><OWL_HOOT>"};
-    OWL_FLAMMULATED = {token: "OWL_FLAMMULATED", value: "<OWL_BARK><OWL_WHISTLE><OWL_WHISTLE><OWL_BARK>"};
+    OWL_HOOT = {token: "<OWL_HOOT>", value: "hoot"};
+    OWL_BARK = {token: "<OWL_BARK>", value: "hu"};
+    OWL_WHISTLE = {token: "<OWL_WHISTLE>", value: "woo"};
+    OWL_BARRED = {token: "<OWL_BARRED>", value: "<OWL_WHISTLE><OWL_BARK>"};
+    OWL_BOREAL = {token: "<OWL_BOREAL>", value: "<OWL_BARK><OWL_BARK><OWL_BARK><OWL_BARK><OWL_BARK>"};
+    OWL_ESCREECH = {token: "<OWL_ESCREECH>", value: "<OWL_BARK><OWL_WHISTLE><OWL_WHISTLE><OWL_HOOT>"};
+    OWL_FLAMMULATED = {token: "<OWL_FLAMMULATED>", value: "<OWL_BARK><OWL_WHISTLE><OWL_WHISTLE><OWL_BARK>"};
 
     private exp: String;
     private owl_noises: LexerToken[];
