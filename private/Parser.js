@@ -14,12 +14,17 @@ Production Rules:
 
 An owl can chirp up to five times in a row.
 */
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Parser = void 0;
 var Token_1 = require("./Token");
 var Action_1 = require("./Action");
+var BNF_json_1 = __importDefault(require("./BNF.json"));
 var Parser = /** @class */ (function () {
     function Parser(input, output, isInputValid) {
+        this.BNF = BNF_json_1.default;
         this.input = input;
         this.output = output;
         this.isInputValid = isInputValid;
@@ -28,14 +33,19 @@ var Parser = /** @class */ (function () {
         this.parserStack = Array();
         this.token = new Token_1.Token();
         this.action = new Action_1.Action();
-        this.actionVal = { actionStr: "", actionInt: 0 };
-        this.stackData = { stack: "", action: { actionStr: "", actionInt: 0 } };
+        this.result = "talking gibberish.";
+        this.isBarking = false;
+        this.isHooting = false;
+        this.isWhistling = false;
+        this.totalBark = 0;
+        this.totalHoot = 0;
+        this.totalWhistle = 0;
     }
     //Main function
     Parser.prototype.main = function () {
         this.preprocessInput();
         this.validateToken();
-        return this.parserStack;
+        return { parserToken: this.parserStack, result: this.result, amount: this.totalBark };
     };
     //Append to stack
     Parser.prototype.pushStack = function (input) { this.inputStack.push(input); };
@@ -69,7 +79,12 @@ var Parser = /** @class */ (function () {
             this.parserStack.push({ stack: "$", input: this.inputStack.join(" "), action: this.action.getAction(0) });
             this.tokenStack.push(this.inputStack[0]);
             this.shiftStack();
-            this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1) + this.action.getKeyword() });
+            if (this.tokenStack[0] == this.token.getOwlNoiseVal(0) || this.tokenStack[0] == this.token.getOwlNoiseVal(1)) {
+                this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0) });
+            }
+            else {
+                this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1) + this.action.getKeyword() });
+            }
         }
         //When the stack has only one value
         if (this.tokenStack.length == 1) {
@@ -82,9 +97,7 @@ var Parser = /** @class */ (function () {
     };
     Parser.prototype.readSingle = function () {
         //The value is a KEYWORD
-        if (this.tokenStack[0] == this.token.getOwlNoiseVal(0) ||
-            this.tokenStack[0] == this.token.getOwlNoiseVal(1) ||
-            this.tokenStack[0] == this.token.getOwlNoiseVal(2)) {
+        if (this.tokenStack[0] == this.token.getOwlNoiseVal(2)) {
             if (this.inputStack.length == 0) {
                 this.tokenStack[0] = this.action.getSingle();
                 this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: "" });
@@ -98,24 +111,63 @@ var Parser = /** @class */ (function () {
                 this.shiftStack();
             }
         }
+        else {
+            //Check if owl is barking...
+            if (this.tokenStack[0] == this.token.getOwlNoiseVal(1)) {
+                this.tokenStack.push(this.inputStack[0]);
+                this.shiftStack();
+                this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0) });
+                this.isOwlBarking(0);
+            }
+            else if (this.tokenStack[0] == this.action.getSingle()) {
+                if (this.inputStack.length != 0) {
+                    this.tokenStack.push(this.inputStack[0]);
+                    this.shiftStack();
+                    this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0) });
+                }
+                else {
+                    this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: "" });
+                }
+            }
+        }
     };
     Parser.prototype.readMultiple = function () {
         if (this.tokenStack[1] == this.token.getOwlNoiseVal(0) ||
             this.tokenStack[1] == this.token.getOwlNoiseVal(1) ||
             this.tokenStack[1] == this.token.getOwlNoiseVal(2)) {
             if (this.tokenStack[0] == this.action.getSingle()) {
-                this.doThreeSteps(false);
-                this.tokenStack.push(this.inputStack[0]);
-                this.shiftStack();
-                //Check if the input stack still have child to be pushed
-                if (this.inputStack.length == 0) {
-                    if (!this.scanTokenStack()) {
-                        this.doThreeSteps(true);
+                if (this.tokenStack[1] == this.token.getOwlNoiseVal(1)) {
+                    if (this.tokenStack[2] == this.token.getOwlNoiseVal(0)) {
+                        this.tokenStack.push(this.inputStack[0]);
+                        this.shiftStack();
+                        this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0) });
+                        this.isOwlBarking(1);
                     }
                     else {
-                        this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: "" });
+                        this.tokenStack.push(this.inputStack[0]);
+                        this.shiftStack();
+                        this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0) });
                     }
                 }
+                else {
+                    this.doThreeSteps(false);
+                    this.tokenStack.push(this.inputStack[0]);
+                    this.shiftStack();
+                    //Check if the input stack still have child to be pushed
+                    if (this.inputStack.length == 0) {
+                        if (!this.scanTokenStack()) {
+                            this.doThreeSteps(true);
+                            this.tokenStack.push(this.inputStack[0]);
+                            this.shiftStack();
+                        }
+                        else {
+                            this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: "" });
+                        }
+                    }
+                }
+            }
+            else {
+                //Check if owl is barking...
             }
         }
     };
@@ -127,6 +179,45 @@ var Parser = /** @class */ (function () {
         this.tokenStack.pop();
         this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: isComplete ? "" : this.action.getAction(0) });
     };
+    Parser.prototype.doBasicShift = function () {
+        if (this.inputStack.length != 0) {
+            this.tokenStack.push(this.inputStack[0]);
+            this.shiftStack();
+            if (this.tokenStack.length <= 4) {
+                this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0) });
+                this.tokenStack.push(this.inputStack[0]);
+                this.shiftStack();
+            }
+        }
+    };
+    //Check at last if owl is really barking
+    //<OWL_BARK> => hu hoot <EXP> hoot
+    Parser.prototype.isOwlBarking = function (pos) {
+        this.doBasicShift();
+        if (this.tokenStack[pos] == this.token.getOwlNoiseVal(1) &&
+            this.tokenStack[pos + 1] == this.token.getOwlNoiseVal(0) &&
+            (this.tokenStack[pos + 2] == this.token.getOwlNoiseVal(0) ||
+                this.tokenStack[pos + 2] == this.token.getOwlNoiseVal(1) ||
+                this.tokenStack[pos + 2] == this.token.getOwlNoiseVal(2)) &&
+            this.tokenStack[pos + 3] == this.token.getOwlNoiseVal(0)) {
+            this.result = "barking";
+            this.isBarking = true;
+            this.totalBark++;
+            this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1) + this.action.getBark() });
+            if (this.tokenStack[0] == this.action.getSingle()) {
+                this.tokenStack = [];
+                this.tokenStack.push(this.action.getDouble());
+                this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1) + this.action.getDouble() });
+                this.tokenStack.pop();
+                this.tokenStack.push(this.action.getSingle());
+            }
+            else {
+                this.tokenStack = [];
+                this.tokenStack.push(this.action.getSingle());
+            }
+            this.rerunUntilComplete();
+        }
+    };
     //Check if there's any keyword exist in the stack
     Parser.prototype.scanTokenStack = function () {
         var needles = [this.token.getOwlNoiseVal(0), this.token.getOwlNoiseVal(1), this.token.getOwlNoiseVal(2)];
@@ -134,6 +225,20 @@ var Parser = /** @class */ (function () {
         var doesTokenExist = false;
         needles.every(function (i) { return doesTokenExist = haystack.includes(i); });
         return doesTokenExist;
+    };
+    //Check state and rerun until input stack is empty
+    Parser.prototype.rerunUntilComplete = function () {
+        if (this.inputStack.length != 0) {
+            this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0) });
+            this.tokenStack.push(this.inputStack[0]);
+            this.shiftStack();
+            while (this.inputStack.length == 0) {
+                this.doThreeSteps(false);
+            }
+        }
+        else {
+            this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.inputStack.join(" "), action: "" });
+        }
     };
     return Parser;
 }());

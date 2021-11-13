@@ -7,12 +7,12 @@ export class Action implements ActionToken{
     constructor(){}
 
     getAction(type: any){return type==0 ? this.shift : this.reduce}
-
+    
+    getUnknown(){return "UNKNOWN"}
     getKeyword(){return "KEYWORD"}
     getSingle(){return "<EXP>"}
     getDouble(){return "<EXP> <EXP>"}
-    getTriple(){return "<EXP> <EXP> <EXP>"}
-    getQuadruple(){return "<EXP> <EXP> <EXP> <EXP>"}
-    getQuintuple(){return "<EXP> <EXP> <EXP> <EXP> <EXP>"}
-
+    getWhistle(){return "KEYWORD <EXP>"}
+    getBark(){return "hu hoot <EXP> hoot"}
+    getHoot(){return "KEYWORD <EXP>"}
 }

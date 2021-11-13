@@ -19,17 +19,19 @@ export interface ParserToken{
     action: String
 }
 
+export interface ParserResults{
+    parserToken: ParserToken[],
+    result: String,
+    amount: any
+}
+
 export interface ActionToken{
     shift: String,
     reduce: String
 }
 
-export interface ActionVal{
-    actionStr: String,
-    actionInt: any
-}
-
-export interface StackData{
-    stack: String,
-    action: ActionVal
+export interface BNF{
+    expression: String,
+    value: String,
+    action: String
 }

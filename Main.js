@@ -9,7 +9,7 @@ var Main = /** @class */ (function () {
         this.input = input;
         this.lexer = new Lexer_1.Lexer(input);
         this.tokenLexer = { output: Array(), isValid: false };
-        this.tokenParser = Array();
+        this.tokenParser = { parserToken: Array(), result: "", amount: 0 };
         console.log("Input: ");
         console.log(this.input);
     }
@@ -45,12 +45,28 @@ var Main = /** @class */ (function () {
             ],
             disabledColumns: ["action"],
         });
-        p.addRows(this.tokenParser, { color: 'green' });
+        p.addRows(this.tokenParser.parserToken, { color: 'green' });
         p.printTable();
+        console.log("Result: 🦉 is " + this.tokenParser.result + this.preprocessAmount() + "\n");
+    };
+    //Display the amount of owl's action
+    Main.prototype.preprocessAmount = function () {
+        if (this.tokenParser.amount == 1) {
+            return "!";
+        }
+        else if (this.tokenParser.amount == 2) {
+            return " for twice!";
+        }
+        else if (this.tokenParser.amount == 3) {
+            return " for thrice!";
+        }
+        else if (this.tokenParser.amount > 3) {
+            return " for many times!";
+        }
     };
     return Main;
 }());
-var input = "hoot hu hoot woo hoot hu woo";
+var input = "hu hoot woo hoot hu hoot woo hoot hu hoot woo hoot hu hoot woo hoot";
 var main = new Main(input);
 main.runLexer();
 main.runParser();

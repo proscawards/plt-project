@@ -1,24 +1,25 @@
 import { Token } from './Token';
 import { Output } from './Interfaces';
+import { Action } from './Action';
 
 export class Lexer{
 
     private input: String;
     private output: Output[];
     private tokenize: String[];
-    private backup: String[];
     private error: Output[];
     private regex: any;
     private token: any;
+    private action: any;
 
     constructor(input: String){
         this.input = input;
         this.output = Array();
         this.tokenize = Array();
-        this.backup = Array();
         this.error = Array();
         this.regex = /((?<![\w\d])(hoot|woo|hu)(?![\w\d]))*([/ /g])*/gmi;
         this.token = new Token();
+        this.action = new Action();
     }
 
     lexer(){
@@ -26,16 +27,16 @@ export class Lexer{
         this.tokenize = this.input.split(" ").filter(b => b);
         for (let i=0; i < this.tokenize.length; i++){
             if (this.tokenize[i].includes(this.token.getOwlNoiseVal(0))){
-                this.output.push({input: this.token.getOwlNoiseVal(0), token: this.token.getOwlNoiseTok(0)});
+                this.output.push({input: this.token.getOwlNoiseVal(0), token: this.action.getKeyword()});
             }
             else if (this.tokenize[i].includes(this.token.getOwlNoiseVal(1))){
-                this.output.push({input: this.token.getOwlNoiseVal(1), token: this.token.getOwlNoiseTok(1)});
+                this.output.push({input: this.token.getOwlNoiseVal(1), token: this.action.getKeyword()});
             }
             else if (this.tokenize[i].includes(this.token.getOwlNoiseVal(2))){
-                this.output.push({input: this.token.getOwlNoiseVal(2), token: this.token.getOwlNoiseTok(2)});
+                this.output.push({input: this.token.getOwlNoiseVal(2), token: this.action.getKeyword()});
             }
             else{
-                this.error.push({input: this.tokenize[i], token: "UNKNOWN"});
+                this.error.push({input: this.tokenize[i], token: this.action.getUnknown()});
                 break;
             }
         }

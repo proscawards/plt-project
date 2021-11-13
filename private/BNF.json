@@ -1,0 +1,47 @@
+[
+    {
+        "expression": "<EXP> => KEYWORD",
+        "value": "KEYWORD",
+        "action": "KEYWORD"
+    },
+    {
+        "expression": "<EXP> => <EXP>",
+        "value": "<EXP>",
+        "action": "SINGLE"
+    },
+    {
+        "expression": "<EXP> => <EXP> <EXP>",
+        "value": "<EXP>,<EXP>",
+        "action": "DOUBLE"
+    },
+    {
+        "expression": "<EXP> => <OWL_WHISTLE>",
+        "value": "<OWL_WHISTLE>",
+        "action": "WHISTLE_EXP"
+    },
+    {
+        "expression": "<EXP> => <OWL_BARK>",
+        "value": "<OWL_BARK>",
+        "action": "BARK_EXP"
+    },
+    {
+        "expression": "<EXP> => <OWL_HOOT>",
+        "value": "<OWL_HOOT>",
+        "action": "HOOT_EXP"
+    },
+    {
+        "expression": "<OWL_WHISTLE> => hu woo woo hoot <EXP>",
+        "value": "hu,woo,woo,hoot,<EXP>",
+        "action": "WHISTLE"
+    },
+    {
+        "expression": "<OWL_BARK> => hu hoot <EXP> hoot",
+        "value": "hu,hoot,<EXP>,hoot",
+        "action": "BARK"
+    },
+    {
+        "expression": "<OWL_HOOT> => hoot hoot hu <EXP>",
+        "value": "hoot,hoot,hu,<EXP>",
+        "action": "HOOT"
+    }
+]
