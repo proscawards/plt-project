@@ -29,7 +29,6 @@ export class Parser{
     private parserStack: ParserToken[];
     private token: any;
     private action: any;
-    private currAction: any;
     private actionVal: ActionVal;
 
     constructor(input: String, output: Output[], isInputValid: boolean){
@@ -43,13 +42,13 @@ export class Parser{
         this.action = new Action();
         this.actionVal = {actionStr:"", actionInt:0};
         this.stackData = {stack:"", action: {actionStr:"", actionInt:0}};
-        this.currAction = 0;
     }
 
     //Main function
     main(){
         this.preprocessInput();
         this.validateToken();
+        return this.parserStack;
     }
 
     //Append to stack
@@ -77,107 +76,83 @@ export class Parser{
 
     //Process token stack
     preprocessparserStack(){
-        for (let i=-1; i <= this.inputStack.length; i++){
+        while(this.inputStack.length != 0 && !this.scanTokenStack()){
             this.readStack();
         }
-
-        this.parserStack.map(tok => {
-            console.table(tok.stack+"\t\t\t\t"+tok.input+"\t\t\t\t"+tok.action)
-        })
-        console.log("Completed")
     }  
 
-    /*
     readStack(){
-            //First elem is KEYWORD
-            if (this.tokenStack[0] == this.token.getOwlNoiseVal(0) || 
-                this.tokenStack[0] == this.token.getOwlNoiseVal(1) || 
-                this.tokenStack[0] == this.token.getOwlNoiseVal(2)){
-                this.currAction = 1;
-                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(this.currAction)+this.action.getKeyword()});
-                this.tokenStack[0] = this.action.getSingle();
-            } //First elem is EXP
-            else{
-                if (this.inputStack.length == 0 && this.tokenStack.length == 1 && this.tokenStack[0] == this.action.getSingle()){
-                    this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: "Completed"});
-                }
-                else if (this.tokenStack[1] == this.token.getOwlNoiseVal(0) || 
-                        this.tokenStack[1] == this.token.getOwlNoiseVal(1) || 
-                        this.tokenStack[1] == this.token.getOwlNoiseVal(2)){
-                            this.currAction = 0;
-                            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(this.currAction)});
-                            this.tokenStack.push(this.inputStack[0]);
-                            this.shiftStack();   
-                }
-                else{
-                    if (this.inputStack.length != 0 && this.tokenStack.length != 0){
-                        this.currAction = 0;
-                        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(this.currAction)});
-                        this.tokenStack.push(this.inputStack[0]);
-                        this.shiftStack();   
-                    }
-                    else{
-                        //Initial
-                        this.currAction = 0;
-                        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(this.currAction)});
-                        this.tokenStack.push(this.inputStack[0]);
-                        this.shiftStack();   
-                    }
-                }
-            }
+        //On init
+        if (this.tokenStack.length == 0 && this.inputStack.length != 0){
+            this.parserStack.push({stack: "$", input: this.inputStack.join(" "), action: this.action.getAction(0)});
+            this.tokenStack.push(this.inputStack[0]);
+            this.shiftStack();
+            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getKeyword()});
         }
-        */
+        //When the stack has only one value
+        if (this.tokenStack.length == 1){this.readSingle();}
+        //When the stack has more than two values
+        else{this.readMultiple();}
+    }
 
-        readStack(){
-            //On init
-            if (this.tokenStack.length == 0 && this.inputStack.length != 0){
-                this.parserStack.push({stack: "$", input: this.inputStack.join(" "), action: this.action.getAction(0)});
+    readSingle(){
+        //The value is a KEYWORD
+        if (this.tokenStack[0] == this.token.getOwlNoiseVal(0) ||
+        this.tokenStack[0] == this.token.getOwlNoiseVal(1) || 
+        this.tokenStack[0] == this.token.getOwlNoiseVal(2)){
+            if (this.inputStack.length == 0){
+                this.tokenStack[0] = this.action.getSingle();
+                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: ""});
                 this.tokenStack.push(this.inputStack[0]);
                 this.shiftStack();
-                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getKeyword()});
             }
-            //When the stack has only one value
-            if (this.tokenStack.length == 1){
-                //The value is a KEYWORD
-                if (this.tokenStack[0] == this.token.getOwlNoiseVal(0) ||
-                    this.tokenStack[0] == this.token.getOwlNoiseVal(1) || 
-                    this.tokenStack[0] == this.token.getOwlNoiseVal(2)){
-                        if (this.inputStack.length == 0){
-                            this.tokenStack[0] = this.action.getSingle();
-                            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: ""});
-                            this.tokenStack.push(this.inputStack[0]);
-                            this.shiftStack();
-                        }
-                        else{
-                            this.tokenStack[0] = this.action.getSingle();
-                            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
-                            this.tokenStack.push(this.inputStack[0]);
-                            this.shiftStack();
-                        }
-                    }
-            }
-            //When the stack has two values
-            if (this.tokenStack.length == 2){
-                if (this.tokenStack[1] == this.token.getOwlNoiseVal(0) ||
-                    this.tokenStack[1] == this.token.getOwlNoiseVal(1) || 
-                    this.tokenStack[1] == this.token.getOwlNoiseVal(2)){
-                        if (this.tokenStack[0] == this.action.getSingle()){
-                            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getKeyword()});
-                            this.tokenStack[1] = this.action.getSingle();
-                            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getDouble()});
-                            this.tokenStack.pop();
-                            this.shiftStack();
-                            //Check if the input stack still have child to be pushed
-                            if (this.inputStack.length != 0){
-                                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
-                            }
-                            else{
-                                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: ""});
-                            }
-                        }
-                    }
+            else{
+                this.tokenStack[0] = this.action.getSingle();
+                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
+                this.tokenStack.push(this.inputStack[0]);
+                this.shiftStack();
             }
         }
+    }
+
+    readMultiple(){
+        if (this.tokenStack[1] == this.token.getOwlNoiseVal(0) ||
+        this.tokenStack[1] == this.token.getOwlNoiseVal(1) || 
+        this.tokenStack[1] == this.token.getOwlNoiseVal(2)){
+            if (this.tokenStack[0] == this.action.getSingle()){
+                this.doThreeSteps(false);
+                this.tokenStack.push(this.inputStack[0]);
+                this.shiftStack();
+                //Check if the input stack still have child to be pushed
+                if (this.inputStack.length == 0){
+                    if (!this.scanTokenStack()){
+                        this.doThreeSteps(true);             
+                    }
+                    else{
+                        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: ""});
+                    }
+                }
+            }
+        }
+    }
+
+    //From keyword to double to SHIFT
+    doThreeSteps(isComplete: boolean){
+        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getKeyword()});
+        this.tokenStack[1] = this.action.getSingle();
+        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getDouble()});
+        this.tokenStack.pop();
+        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: isComplete ? "" : this.action.getAction(0)});
+    }
+
+    //Check if there's any keyword exist in the stack
+    scanTokenStack(){
+        let needles: String[] = [this.token.getOwlNoiseVal(0),this.token.getOwlNoiseVal(1), this.token.getOwlNoiseVal(2)];
+        let haystack: String[] = this.tokenStack;
+        let doesTokenExist: boolean = false;
+        needles.every(i => doesTokenExist = haystack.includes(i));
+        return doesTokenExist;
+    }
     
 }
 

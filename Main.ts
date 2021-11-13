@@ -1,6 +1,8 @@
 import { Lexer } from "./private/Lexer";
 import { Parser } from "./private/Parser";
-import { IsOutputValid, Output } from "./private/Interfaces";
+import { IsOutputValid, ParserToken } from "./private/Interfaces";
+import { Table } from "console-table-printer";
+const chalk = require("chalk");
 
 class Main{
 
@@ -8,11 +10,13 @@ class Main{
     private lexer: any;
     private parser: any;
     private tokenLexer: IsOutputValid;
+    private tokenParser: ParserToken[];
 
     constructor(input: String){
         this.input = input;
         this.lexer = new Lexer(input);
         this.tokenLexer = {output: Array(), isValid: false};
+        this.tokenParser = Array();
         console.log("Input: ");
         console.log(this.input);
     }
@@ -29,14 +33,29 @@ class Main{
 
     runParser(){
         console.log("\nSyntax Analysis: ");
-        console.log("stack\t\t\t\tinput\t\t\t\taction");
-        this.parser.main();
-        console.log("\n");
+        this.tokenParser = this.parser.main();
+        const p = new Table({
+            columns: [
+              { name: 'stack', title: 'Stack', alignment: 'left'},
+              { name: 'input', title: 'Input', alignment: 'left'}],
+            computedColumns: [
+              { name: 'actions', title: 'Action', alignment: 'left',               
+                function: (row) => {
+                    let val: String = row.action;
+                    if (val == "SHIFT") {return chalk.red(val);}
+                    return chalk.blue(val);
+                }
+                }
+            ],
+            disabledColumns: ["action"],
+          });
+        p.addRows(this.tokenParser, {color: 'green'});
+        p.printTable();
     }
     
 }
 
-let input = "hoot hu";
+let input = "hoot hu hoot woo hoot hu woo";
 let main = new Main(input);
 main.runLexer();
 main.runParser();

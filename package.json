@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@types/node": "^16.11.7",
+    "console-table-printer": "^2.10.0",
     "nodemon": "^2.0.15"
   },
   "name": "plt-project",

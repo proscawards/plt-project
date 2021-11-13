@@ -1,14 +1,10 @@
 import { ActionToken } from './Interfaces';
-import { Token } from './Token';
 
 export class Action implements ActionToken{
     shift = "SHIFT";
     reduce = "REDUCE TO EXP -> ";
-    private token: any;
 
-    constructor(){
-        this.token = new Token();
-    }
+    constructor(){}
 
     getAction(type: any){return type==0 ? this.shift : this.reduce}
 

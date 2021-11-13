@@ -1,12 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Action = void 0;
-var Token_1 = require("./Token");
 var Action = /** @class */ (function () {
     function Action() {
         this.shift = "SHIFT";
         this.reduce = "REDUCE TO EXP -> ";
-        this.token = new Token_1.Token();
     }
     Action.prototype.getAction = function (type) { return type == 0 ? this.shift : this.reduce; };
     Action.prototype.getKeyword = function () { return "KEYWORD"; };
