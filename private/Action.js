@@ -11,7 +11,7 @@ var Action = /** @class */ (function () {
     Action.prototype.getKeyword = function () { return "KEYWORD"; };
     Action.prototype.getSingle = function () { return "<EXP>"; };
     Action.prototype.getDouble = function () { return "<EXP> <EXP>"; };
-    Action.prototype.getWhistle = function () { return "KEYWORD <EXP>"; };
+    Action.prototype.getWhistle = function () { return "hu woo woo hoot <EXP>"; };
     Action.prototype.getBark = function () { return "hu hoot <EXP> hoot"; };
     Action.prototype.getHoot = function () { return "KEYWORD <EXP>"; };
     return Action;

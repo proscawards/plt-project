@@ -12,7 +12,7 @@ export class Action implements ActionToken{
     getKeyword(){return "KEYWORD"}
     getSingle(){return "<EXP>"}
     getDouble(){return "<EXP> <EXP>"}
-    getWhistle(){return "KEYWORD <EXP>"}
+    getWhistle(){return "hu woo woo hoot <EXP>"}
     getBark(){return "hu hoot <EXP> hoot"}
     getHoot(){return "KEYWORD <EXP>"}
 }

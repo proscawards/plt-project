@@ -14,7 +14,7 @@ Production Rules:
 An owl can chirp up to five times in a row.
 */
 
-import { BNF, Output, ParserToken } from './Interfaces';
+import { BNF, Output, ParserToken, OwlActions } from './Interfaces';
 import { Token } from './Token';
 import { Action } from './Action';
 import bnf from "./BNF.json";
@@ -30,13 +30,8 @@ export class Parser{
     private token: any;
     private action: any;
     private BNF: BNF[] = bnf;
-    private result: String;
-    private isBarking: boolean;
-    private isHooting: boolean;
-    private isWhistling: boolean;
-    private totalBark: any;
-    private totalHoot: any;
-    private totalWhistle: any;
+    private isError: boolean;
+    private owlActions: OwlActions;
 
     constructor(input: String, output: Output[], isInputValid: boolean){
         this.input = input;
@@ -47,20 +42,28 @@ export class Parser{
         this.parserStack = Array();
         this.token = new Token();
         this.action = new Action();
-        this.result = "talking gibberish.";
-        this.isBarking = false;
-        this.isHooting = false;
-        this.isWhistling = false;
-        this.totalBark = 0;
-        this.totalHoot = 0;
-        this.totalWhistle = 0;
+        this.isError = false;
+        this.owlActions = {
+            hoot: {
+                action: "hooting for",
+                amount: 0
+            },
+            whistle: {
+                action: "whistling for",
+                amount: 0
+            },
+            bark: {
+                action: "barking for",
+                amount: 0
+            },
+        }
     }
 
     //Main function
     main(){
         this.preprocessInput();
         this.validateToken();
-        return {parserToken: this.parserStack, result: this.result, amount: this.totalBark};
+        return {parserToken: this.parserStack, owlActions: this.owlActions, isError: this.isError};
     }
 
     //Append to stack
@@ -82,6 +85,7 @@ export class Parser{
             this.preprocessparserStack();
         }
         else{
+            this.isError = true;
             console.log("Error! Unknown token(s) found in the input.")
         }
     }
@@ -100,7 +104,12 @@ export class Parser{
             this.tokenStack.push(this.inputStack[0]);
             this.shiftStack();
             if (this.tokenStack[0] == this.token.getOwlNoiseVal(0) || this.tokenStack[0] == this.token.getOwlNoiseVal(1)){
-                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
+                if (this.inputStack.length != 0 && (this.inputStack[0] == this.token.getOwlNoiseVal(2) || this.inputStack[0] == this.token.getOwlNoiseVal(0))){
+                    this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
+                }
+                else{
+                    this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getKeyword()});
+                }
             }
             else{
                 this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getKeyword()});
@@ -122,28 +131,48 @@ export class Parser{
                 this.shiftStack();
             }
             else{
-                this.tokenStack[0] = this.action.getSingle();
-                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
-                this.tokenStack.push(this.inputStack[0]);
-                this.shiftStack();
+                this.reduceShiftOnSingle();
             }
         }
         else{
-            //Check if owl is barking...
+            //Check if owl is barking or whistling
             if (this.tokenStack[0] == this.token.getOwlNoiseVal(1)){
-                this.tokenStack.push(this.inputStack[0]);
-                this.shiftStack();
-                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
-                this.isOwlBarking(0);
+                //Owl is going to whistle(?)
+                if (this.inputStack.length != 0 && (this.inputStack[0] == this.token.getOwlNoiseVal(2))){
+                    this.stackOnShift();
+                    this.isOwlWhistling(0);
+                }
+                //Owl is going to bark(?)
+                else if (this.inputStack.length != 0 && (this.inputStack[0] == this.token.getOwlNoiseVal(0))){
+                    this.stackOnShift(this.inputStack.length > 2, this.action.getDouble());
+                    this.isOwlBarking(0);
+                    this.reduceShiftOnOngoingAction(this.inputStack.length == 0);
+                }
+                //Owl is definitely not going to whistle or bark at this point '-'
+                else{
+                    this.reduceShiftOnSingle();
+                }
+            }
+            //Check if owl is hooting...
+            else if (this.tokenStack[0] == this.token.getOwlNoiseVal(0)){
+                //Owl is going to hoot(?)
+                if (this.inputStack.length != 0 && (this.inputStack[0] == this.token.getOwlNoiseVal(0))){
+                    this.stackOnShift();
+                    if (this.inputStack.length != 0){
+                        this.isOwlWhistling(0);
+                    }
+                }
+                //Owl is definitely not going to hoot at this point '-'
+                else{
+                    this.reduceShiftOnSingle();
+                }
             }
             else if (this.tokenStack[0] == this.action.getSingle()){
                 if (this.inputStack.length != 0){
-                    this.tokenStack.push(this.inputStack[0]);
-                    this.shiftStack();
-                    this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
+                    this.stackOnShift();
                 }
                 else{
-                    this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: ""});
+                    this.stackOnComplete();
                 }
             }
         }
@@ -151,51 +180,71 @@ export class Parser{
 
     readMultiple(){
         if (this.tokenStack[1] == this.token.getOwlNoiseVal(0) ||
-        this.tokenStack[1] == this.token.getOwlNoiseVal(1) || 
-        this.tokenStack[1] == this.token.getOwlNoiseVal(2)){
+            this.tokenStack[1] == this.token.getOwlNoiseVal(1) || 
+            this.tokenStack[1] == this.token.getOwlNoiseVal(2)){
             if (this.tokenStack[0] == this.action.getSingle()){
                 if (this.tokenStack[1] == this.token.getOwlNoiseVal(1)){
-                    if (this.tokenStack[2] == this.token.getOwlNoiseVal(0)){
-                        this.tokenStack.push(this.inputStack[0]);
-                        this.shiftStack();
-                        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
+                    if (this.inputStack.length != 0 && (this.inputStack[0] == this.token.getOwlNoiseVal(0))){
+                        this.stackOnShift();
                         this.isOwlBarking(1);
                     }
+                    else if (this.inputStack.length != 0 && (this.inputStack[0] == this.token.getOwlNoiseVal(2))){
+                        this.stackOnShift();
+                        this.isOwlWhistling(1);
+                    }
                     else{
-                        this.tokenStack.push(this.inputStack[0]);
-                        this.shiftStack();
-                        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
+                        this.stackOnShift();
                     }
                 }
                 else{
-                    this.doThreeSteps(false);
+                    this.reduceShiftOnKeywordDouble(false);
                     this.tokenStack.push(this.inputStack[0]);
                     this.shiftStack();
                     //Check if the input stack still have child to be pushed
                     if (this.inputStack.length == 0){
                         if (!this.scanTokenStack()){
-                            this.doThreeSteps(true); 
+                            this.reduceShiftOnKeywordDouble(true); 
                             this.tokenStack.push(this.inputStack[0]);
                             this.shiftStack();            
                         }
                         else{
-                            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: ""});
+                            this.stackOnComplete();
                         }
                     }
                 }
             }
             else{
-                //Check if owl is barking...
+                if ((this.tokenStack[0] == this.token.getOwlNoiseVal(0) ||
+                    this.tokenStack[0] == this.token.getOwlNoiseVal(1) || 
+                    this.tokenStack[0] == this.token.getOwlNoiseVal(2)) &&
+                    (this.tokenStack[1] == this.token.getOwlNoiseVal(0) ||
+                    this.tokenStack[1] == this.token.getOwlNoiseVal(1) || 
+                    this.tokenStack[1] == this.token.getOwlNoiseVal(2))){
+                    this.reduceShiftOnKeywordDouble(true);
+                }
+                else{
+                    this.reduceShiftOnKeywordDouble(false);
+                }
             }
         }
     }
 
-    //From keyword to double to SHIFT
-    doThreeSteps(isComplete: boolean){
+    //Reduce and shift from KEYWORD to Double <EXP>
+    reduceShiftOnKeywordDouble(isComplete: boolean){
         this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getKeyword()});
         this.tokenStack[1] = this.action.getSingle();
         this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getDouble()});
         this.tokenStack.pop();
+        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: isComplete ? "" : this.action.getAction(0)});
+    }
+
+    //Reduce and shift on ongoing action where the stack is building up to hoot/whistle/bark but failed
+    reduceShiftOnOngoingAction(isComplete: boolean){
+        this.tokenStack = [];
+        this.tokenStack[0] = this.action.getDouble();
+        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getSingle()});
+        this.tokenStack.pop();
+        this.tokenStack[0] = this.action.getSingle();
         this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: isComplete ? "" : this.action.getAction(0)});
     }
 
@@ -211,6 +260,34 @@ export class Parser{
         }
     }
 
+    //Reduce and shift on Single <EXP>
+    reduceShiftOnSingle(){
+        this.tokenStack[0] = this.action.getSingle();
+        if (this.inputStack.length == 0){
+            this.stackOnComplete();
+        }
+        else{
+            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
+            this.tokenStack.push(this.inputStack[0]);
+            this.shiftStack();
+        }
+    }
+
+    stackOnShift(hasElemLeft?: boolean, actionName?: String){
+        this.tokenStack.push(this.inputStack[0]);
+        this.shiftStack();
+        if (!hasElemLeft){
+            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+actionName});
+        }
+        else{
+            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(0)});
+        }
+    }
+
+    stackOnComplete(){
+        this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: ""});
+    }
+
     //Check at last if owl is really barking
     //<OWL_BARK> => hu hoot <EXP> hoot
     isOwlBarking(pos: any){
@@ -221,10 +298,36 @@ export class Parser{
             this.tokenStack[pos+2] == this.token.getOwlNoiseVal(1) || 
             this.tokenStack[pos+2] == this.token.getOwlNoiseVal(2)) && 
             this.tokenStack[pos+3] == this.token.getOwlNoiseVal(0)){
-                this.result = "barking"
-                this.isBarking=true; 
-                this.totalBark++;
+                this.owlActions.bark.amount++;
                 this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getBark()});
+                if (this.tokenStack[0] == this.action.getSingle()){
+                    this.tokenStack = [];   
+                    this.tokenStack.push(this.action.getDouble());   
+                    this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getDouble()});
+                    this.tokenStack.pop();
+                    this.tokenStack.push(this.action.getSingle());  
+                }
+                else{
+                    this.tokenStack = [];   
+                    this.tokenStack.push(this.action.getSingle());
+                }
+                this.rerunUntilComplete();
+            }
+    }
+
+    //Check at last if owl is really whistling
+    //<OWL_BARK> => hu woo woo hoot <EXP>
+    isOwlWhistling(pos: any){
+        this.doBasicShift();
+        if (this.tokenStack[pos] == this.token.getOwlNoiseVal(1) &&
+            this.tokenStack[pos+1] == this.token.getOwlNoiseVal(2) &&
+            this.tokenStack[pos+2] == this.token.getOwlNoiseVal(2) &&
+            this.tokenStack[pos+3] == this.token.getOwlNoiseVal(0) &&
+            (this.tokenStack[pos+4] == this.token.getOwlNoiseVal(0) ||
+            this.tokenStack[pos+4] == this.token.getOwlNoiseVal(1) || 
+            this.tokenStack[pos+4] == this.token.getOwlNoiseVal(2))){
+                this.owlActions.whistle.amount++;
+                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.inputStack.join(" "), action: this.action.getAction(1)+this.action.getWhistle()});
                 if (this.tokenStack[0] == this.action.getSingle()){
                     this.tokenStack = [];   
                     this.tokenStack.push(this.action.getDouble());   
@@ -256,7 +359,7 @@ export class Parser{
             this.tokenStack.push(this.inputStack[0]);
             this.shiftStack();
             while (this.inputStack.length == 0){
-                this.doThreeSteps(false);
+                this.reduceShiftOnKeywordDouble(false);
             }
         }
         else{

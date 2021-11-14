@@ -9,7 +9,7 @@ var Main = /** @class */ (function () {
         this.input = input;
         this.lexer = new Lexer_1.Lexer(input);
         this.tokenLexer = { output: Array(), isValid: false };
-        this.tokenParser = { parserToken: Array(), result: "", amount: 0 };
+        this.tokenParser = { parserToken: Array(), owlActions: { hoot: { action: "", amount: 0 }, bark: { action: "", amount: 0 }, whistle: { action: "", amount: 0 } }, isError: false };
         console.log("Input: ");
         console.log(this.input);
     }
@@ -47,26 +47,63 @@ var Main = /** @class */ (function () {
         });
         p.addRows(this.tokenParser.parserToken, { color: 'green' });
         p.printTable();
-        console.log("Result: 🦉 is " + this.tokenParser.result + this.preprocessAmount() + "\n");
+        console.log("Result: 🦉 is " + this.preprocessOwlActions() + "\n");
     };
-    //Display the amount of owl's action
-    Main.prototype.preprocessAmount = function () {
-        if (this.tokenParser.amount == 1) {
-            return "!";
+    //Preprocess owl's corresponding action and amount
+    Main.prototype.preprocessOwlActions = function () {
+        var isHooting = false, isWhistling = false, isBarking = false;
+        if (this.tokenParser.owlActions.hoot.amount > 0) {
+            isHooting = true;
         }
-        else if (this.tokenParser.amount == 2) {
-            return " for twice!";
+        if (this.tokenParser.owlActions.whistle.amount > 0) {
+            isWhistling = true;
         }
-        else if (this.tokenParser.amount == 3) {
-            return " for thrice!";
+        if (this.tokenParser.owlActions.bark.amount > 0) {
+            isBarking = true;
         }
-        else if (this.tokenParser.amount > 3) {
-            return " for many times!";
+        return this.stringBuilder(isHooting, isWhistling, isBarking, this.tokenParser.isError);
+    };
+    //Build owl actions into string for displaying purpose
+    Main.prototype.stringBuilder = function (isHooting, isWhistling, isBarking, isError) {
+        var hoot = (this.tokenParser.owlActions.hoot.action).toString() + " " + (this.tokenParser.owlActions.hoot.amount).toString() + " times";
+        var whistle = (this.tokenParser.owlActions.whistle.action).toString() + " " + (this.tokenParser.owlActions.whistle.amount).toString() + " times";
+        var bark = (this.tokenParser.owlActions.bark.action).toString() + " " + (this.tokenParser.owlActions.bark.amount).toString() + " times";
+        var and = " and ";
+        var dot = "!";
+        var com = ", ";
+        if (isError) {
+            return "talking gibberish!";
+        }
+        else {
+            if (isHooting && isWhistling && isBarking) {
+                return hoot + com + whistle + dot + and + bark;
+            }
+            else if (isHooting && isWhistling && !isBarking) {
+                return hoot + and + whistle + dot;
+            }
+            else if (isHooting && !isWhistling && isBarking) {
+                return hoot + and + bark + dot;
+            }
+            else if (isHooting && !isWhistling && !isBarking) {
+                return hoot + dot;
+            }
+            else if (!isHooting && isWhistling && isBarking) {
+                return whistle + and + bark + dot;
+            }
+            else if (!isHooting && isWhistling && !isBarking) {
+                return whistle + dot;
+            }
+            else if (!isHooting && !isWhistling && isBarking) {
+                return bark + dot;
+            }
+            else {
+                return "talking normally!";
+            }
         }
     };
     return Main;
 }());
-var input = "hu hoot woo hoot hu hoot woo hoot hu hoot woo hoot hu hoot woo hoot";
+var input = "hu hoot hu hoot";
 var main = new Main(input);
 main.runLexer();
 main.runParser();

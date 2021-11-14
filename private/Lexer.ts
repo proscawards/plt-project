@@ -6,7 +6,8 @@ export class Lexer{
 
     private input: String;
     private output: Output[];
-    private tokenize: String[];
+    private preRegex: String[];
+    private postRegex: String[];
     private error: Output[];
     private regex: any;
     private token: any;
@@ -15,7 +16,8 @@ export class Lexer{
     constructor(input: String){
         this.input = input;
         this.output = Array();
-        this.tokenize = Array();
+        this.preRegex = Array();
+        this.postRegex = Array();
         this.error = Array();
         this.regex = /((?<![\w\d])(hoot|woo|hu)(?![\w\d]))*([/ /g])*/gmi;
         this.token = new Token();
@@ -23,20 +25,20 @@ export class Lexer{
     }
 
     lexer(){
-        //this.tokenize = (this.input.match(this.regex) || []).filter(b => b);
-        this.tokenize = this.input.split(" ").filter(b => b);
-        for (let i=0; i < this.tokenize.length; i++){
-            if (this.tokenize[i].includes(this.token.getOwlNoiseVal(0))){
+        this.preRegex = this.input.split(" ").filter(b => b);
+        this.postRegex = (this.input.match(this.regex) || []).filter(b => b);
+        for (let i=0; i < this.preRegex.length; i++){
+            if (this.preRegex[i] == this.token.getOwlNoiseVal(0)){
                 this.output.push({input: this.token.getOwlNoiseVal(0), token: this.action.getKeyword()});
             }
-            else if (this.tokenize[i].includes(this.token.getOwlNoiseVal(1))){
+            else if (this.preRegex[i] == this.token.getOwlNoiseVal(1)){
                 this.output.push({input: this.token.getOwlNoiseVal(1), token: this.action.getKeyword()});
             }
-            else if (this.tokenize[i].includes(this.token.getOwlNoiseVal(2))){
+            else if (this.preRegex[i] == this.token.getOwlNoiseVal(2)){
                 this.output.push({input: this.token.getOwlNoiseVal(2), token: this.action.getKeyword()});
             }
             else{
-                this.error.push({input: this.tokenize[i], token: this.action.getUnknown()});
+                this.error.push({input: this.preRegex[i], token: this.action.getUnknown()});
                 break;
             }
         }

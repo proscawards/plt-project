@@ -21,8 +21,8 @@ export interface ParserToken{
 
 export interface ParserResults{
     parserToken: ParserToken[],
-    result: String,
-    amount: any
+    owlActions: OwlActions,
+    isError: boolean
 }
 
 export interface ActionToken{
@@ -34,4 +34,15 @@ export interface BNF{
     expression: String,
     value: String,
     action: String
+}
+
+export interface OwlAction{
+    action: String
+    amount: any
+}
+
+export interface OwlActions{
+    hoot: OwlAction,
+    whistle: OwlAction,
+    bark: OwlAction
 }

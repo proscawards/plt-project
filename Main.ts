@@ -16,7 +16,7 @@ class Main{
         this.input = input;
         this.lexer = new Lexer(input);
         this.tokenLexer = {output: Array(), isValid: false};
-        this.tokenParser = {parserToken: Array(), result: "", amount: 0};
+        this.tokenParser = {parserToken: Array(), owlActions: {hoot: {action:"",amount:0}, bark: {action:"",amount:0}, whistle: {action:"",amount:0}}, isError: false};
         console.log("Input: ");
         console.log(this.input);
     }
@@ -51,21 +51,42 @@ class Main{
           });
         p.addRows(this.tokenParser.parserToken, {color: 'green'});
         p.printTable();
-        console.log("Result: 🦉 is "+this.tokenParser.result+this.preprocessAmount()+"\n");
+        console.log("Result: 🦉 is "+this.preprocessOwlActions()+"\n");
     }
 
-    //Display the amount of owl's action
-    preprocessAmount(){
-        if (this.tokenParser.amount == 1){return "!"}
-        else if (this.tokenParser.amount == 2){return " for twice!"}
-        else if (this.tokenParser.amount == 3){return " for thrice!"}
-        else if (this.tokenParser.amount > 3){return " for many times!"}
-        
+    //Preprocess owl's corresponding action and amount
+    preprocessOwlActions(){
+        let isHooting: boolean = false, isWhistling: boolean = false, isBarking: boolean = false;
+        if (this.tokenParser.owlActions.hoot.amount > 0){isHooting = true;}
+        if (this.tokenParser.owlActions.whistle.amount > 0){isWhistling = true;}
+        if (this.tokenParser.owlActions.bark.amount > 0){isBarking = true;}
+        return this.stringBuilder(isHooting, isWhistling, isBarking, this.tokenParser.isError);
+    }
+
+    //Build owl actions into string for displaying purpose
+    stringBuilder(isHooting: boolean, isWhistling: boolean, isBarking: boolean, isError: boolean){
+        let hoot: String = (this.tokenParser.owlActions.hoot.action).toString() + " " + (this.tokenParser.owlActions.hoot.amount).toString() + " times";
+        let whistle: String = (this.tokenParser.owlActions.whistle.action).toString() + " " + (this.tokenParser.owlActions.whistle.amount).toString() + " times";
+        let bark: String = (this.tokenParser.owlActions.bark.action).toString() + " " + (this.tokenParser.owlActions.bark.amount).toString() + " times";
+        let and: string = " and "; let dot: string = "!"; let com: string = ", ";
+        if (isError){
+            return "talking gibberish!"
+        }
+        else{
+            if (isHooting && isWhistling && isBarking){return hoot+com+whistle+dot+and+bark;}
+            else if (isHooting && isWhistling && !isBarking){return hoot+and+whistle+dot;}
+            else if (isHooting && !isWhistling && isBarking){return hoot+and+bark+dot;}
+            else if (isHooting && !isWhistling && !isBarking){return hoot+dot;}
+            else if (!isHooting && isWhistling && isBarking){return whistle+and+bark+dot;}
+            else if (!isHooting && isWhistling && !isBarking){return whistle+dot;}
+            else if (!isHooting && !isWhistling && isBarking){return bark+dot;}
+            else{return "talking normally!"}
+        }
     }
     
 }
 
-let input = "hu hoot woo hoot hu hoot woo hoot hu hoot woo hoot hu hoot woo hoot";
+let input = "hu hoot hu hoot";
 let main = new Main(input);
 main.runLexer();
 main.runParser();
