@@ -103,7 +103,7 @@ var Main = /** @class */ (function () {
     };
     return Main;
 }());
-var input = "hu hoot hu hoot";
+var input = "hu hoot hu hoot hu hoot hu hoot hoot hoot hu hoot hu hoot hoot hu hoot hu hoot hoot hoot hu hoot hu hoot";
 var main = new Main(input);
 main.runLexer();
 main.runParser();

@@ -86,7 +86,7 @@ class Main{
     
 }
 
-let input = "hu hoot hu hoot";
+let input = "hu hoot hu hoot hu hoot hu hoot hoot hoot hu hoot hu hoot hoot hu hoot hu hoot hoot hoot hu hoot hu hoot";
 let main = new Main(input);
 main.runLexer();
 main.runParser();
