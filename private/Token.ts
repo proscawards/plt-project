@@ -1,16 +1,3 @@
-/*
-Start Symbol: 
-<EXP>
-Terminal Symbol:
-[HOOT]
-Production Rules:
-<owl_chirp> -> HOOT
-<owl_speak> -> <owl_chirp>*
-<owl_sing> -> <owl_chirp>*
-<owl_sad> -> <owl_chirp>*
-<owl_fly> -> <owl_chirp>+
-<owl_stare> -> <owl_chirp>*
-*/
 import { LexerToken } from './Interfaces';
 
 interface Owl{

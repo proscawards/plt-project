@@ -1,6 +1,7 @@
 import { Token } from './Token';
 import { Output } from './Interfaces';
 import { Action } from './Action';
+const chalk = require("chalk");
 
 export class Lexer{
 
@@ -46,7 +47,7 @@ export class Lexer{
             return {output: this.output, isValid: true };
         }
         else{
-            console.log("Error! Unknown token(s) found in the input.");
+            console.log(chalk.red.bold("Error! Unknown token(s) found in the input."));
             return {output: this.error, isValid: false };
         }
     }

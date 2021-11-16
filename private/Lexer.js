@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Lexer = void 0;
 var Token_1 = require("./Token");
 var Action_1 = require("./Action");
+var chalk = require("chalk");
 var Lexer = /** @class */ (function () {
     function Lexer(input) {
         this.input = input;
@@ -36,7 +37,7 @@ var Lexer = /** @class */ (function () {
             return { output: this.output, isValid: true };
         }
         else {
-            console.log("Error! Unknown token(s) found in the input.");
+            console.log(chalk.red.bold("Error! Unknown token(s) found in the input."));
             return { output: this.error, isValid: false };
         }
     };

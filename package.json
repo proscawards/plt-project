@@ -2,15 +2,18 @@
   "dependencies": {
     "@types/node": "^16.11.7",
     "console-table-printer": "^2.10.0",
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "prompts": "^2.4.2"
   },
   "name": "plt-project",
   "version": "1.0.0",
   "main": "ShiftReducerParser.js",
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/prompts": "^2.0.14"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ShiftReducerParser.js"
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
