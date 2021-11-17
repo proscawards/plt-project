@@ -17,7 +17,7 @@ export class Runner{
     constructor(input: String){
         this.input = input;
         this.lexer = new Lexer(input);
-        this.tokenLexer = {output: Array(), isValid: false};
+        this.tokenLexer = {preRegex: Array(), postRegex: Array(), isValid: false};
         this.tokenParser = {parserToken: Array(), owlActions: {hoot: {action:"",amount:0}, bark: {action:"",amount:0}, whistle: {action:"",amount:0}}, isError: false};
         this.action = new Action();
     }
@@ -25,12 +25,12 @@ export class Runner{
     runLexer(){
         console.log(chalk.yellow.underline("\nLexical Analysis: "));
         this.tokenLexer = this.lexer.lexer();
-        this.parser = new Parser(this.input, this.tokenLexer.output, this.tokenLexer.isValid);
+        this.parser = new Parser(this.tokenLexer.postRegex.join(" "), this.tokenLexer.isValid);
         console.log("Result:");
-        this.tokenLexer.output.map(tok => 
-            console.log("["+tok.input + ", " + tok.token+"]")
-        );
-        //if (!this.tokenLexer.isValid){console.log("Compiler has stopped reading...")}
+        this.tokenLexer.preRegex.map(tok => {
+            if (tok.token == this.action.getUnknown()){console.log(chalk.bgRed("["+tok.input + ", " + tok.token+"]")+chalk.red.bold.dim(" <-- ERROR"))}
+            else{console.log(chalk.green.dim("["+tok.input + ", " + tok.token+"]"))}
+        });
     }
 
     runParser(){

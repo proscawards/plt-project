@@ -10,19 +10,24 @@ var Runner = /** @class */ (function () {
     function Runner(input) {
         this.input = input;
         this.lexer = new Lexer_1.Lexer(input);
-        this.tokenLexer = { output: Array(), isValid: false };
+        this.tokenLexer = { preRegex: Array(), postRegex: Array(), isValid: false };
         this.tokenParser = { parserToken: Array(), owlActions: { hoot: { action: "", amount: 0 }, bark: { action: "", amount: 0 }, whistle: { action: "", amount: 0 } }, isError: false };
         this.action = new Action_1.Action();
     }
     Runner.prototype.runLexer = function () {
+        var _this = this;
         console.log(chalk.yellow.underline("\nLexical Analysis: "));
         this.tokenLexer = this.lexer.lexer();
-        this.parser = new Parser_1.Parser(this.input, this.tokenLexer.output, this.tokenLexer.isValid);
+        this.parser = new Parser_1.Parser(this.tokenLexer.postRegex.join(" "), this.tokenLexer.isValid);
         console.log("Result:");
-        this.tokenLexer.output.map(function (tok) {
-            return console.log("[" + tok.input + ", " + tok.token + "]");
+        this.tokenLexer.preRegex.map(function (tok) {
+            if (tok.token == _this.action.getUnknown()) {
+                console.log(chalk.bgRed("[" + tok.input + ", " + tok.token + "]") + chalk.red.bold.dim(" <-- ERROR"));
+            }
+            else {
+                console.log(chalk.green.dim("[" + tok.input + ", " + tok.token + "]"));
+            }
         });
-        //if (!this.tokenLexer.isValid){console.log("Compiler has stopped reading...")}
     };
     Runner.prototype.runParser = function () {
         var _this = this;

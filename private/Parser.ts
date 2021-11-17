@@ -1,44 +1,24 @@
-/*
-
-Terminal:
-KEYWORD -> hoot|hu|woo
-
-Production Rules:
-<EXP> -> KEYWORD
-<EXP> -> <EXP>
-<EXP> -> <EXP> <EXP>
-<EXP> -> <EXP> <EXP> <EXP> 
-<EXP> -> <EXP> <EXP> <EXP> <EXP> 
-<EXP> -> <EXP> <EXP> <EXP> <EXP> <EXP>
-
-An owl can chirp up to five times in a row.
-*/
-
-import { BNF, Output, ParserToken, OwlActions} from './Interfaces';
+import { ParserToken, OwlActions} from './Interfaces';
 import { Token } from './Token';
 import { Action } from './Action';
-import bnf from "./BNF.json";
 const chalk = require("chalk");
 
 export class Parser{
 
     private input: String;
-    private output: Output[];
     private isInputValid: boolean;
     private inputStack: String[];
     private tokenStack: String[];
     private parserStack: ParserToken[];
     private token: any;
     private action: any;
-    private BNF: BNF[] = bnf;
     private isError: boolean;
     private owlActions: OwlActions;
     private isCompleted: boolean;
     private currOwlAction: any; 
 
-    constructor(input: String, output: Output[], isInputValid: boolean){
+    constructor(input: String, isInputValid: boolean){
         this.input = input;
-        this.output = output;
         this.isInputValid = isInputValid;
         this.inputStack = Array();
         this.tokenStack = Array();
@@ -88,9 +68,9 @@ export class Parser{
     trimInputOnDisplay(){
         let display: String;
         if (this.inputStack.length > 10){
-            display = this.inputStack.slice(0, 10).join(" ")+"...";
+            display = this.inputStack.slice(0, 10).join(" ")+"...$";
         }
-        else{display = this.inputStack.join(" ");}
+        else{display = this.inputStack.join(" ")+"$";}
         return display;
     }
 
@@ -107,7 +87,7 @@ export class Parser{
 
     //Process token stack
     preprocessparserStack(){
-        while(this.inputStack.length != 0){
+        while(!this.isCompleted){
             this.readStack();
         }
     }  
@@ -189,7 +169,14 @@ export class Parser{
         this.tokenStack[1] = this.action.getSingle();
         this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.trimInputOnDisplay(), action: this.action.getDouble()});
         this.tokenStack.pop();
-        this.inputStack.length == 0 ? this.stackOnComplete() : this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.trimInputOnDisplay(), action: this.action.getAction(0)});
+        if (this.inputStack.length != 0){
+            this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.trimInputOnDisplay(), action: this.action.getAction(0)});
+        }
+        else{
+            if (!this.scanTokenStack()){
+                this.stackOnComplete();
+            }
+        }
     }
 
     //Execute basic shift & reduce based on the current owl's action
@@ -219,7 +206,9 @@ export class Parser{
         this.tokenStack.push(this.inputStack[0]);
         this.shiftStack();
         if (this.inputStack.length == 0){
-            this.stackOnComplete();
+            if (!this.scanTokenStack()){
+                this.stackOnComplete();
+            }
         }
     }
 
@@ -341,9 +330,7 @@ export class Parser{
     scanTokenStack(){
         let needles: String[] = [this.token.getOwlNoiseVal(0),this.token.getOwlNoiseVal(1), this.token.getOwlNoiseVal(2)];
         let haystack: String[] = this.tokenStack;
-        let doesTokenExist: boolean = false;
-        needles.every(i => doesTokenExist = haystack.includes(i));
-        return doesTokenExist;
+        return needles.some(i => haystack.some(j => j === i));
     }
 
     //Iterate through upcoming inputStack if it's a possible owl action

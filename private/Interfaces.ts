@@ -4,7 +4,8 @@ export interface Output{
 }
 
 export interface IsOutputValid{
-    output: Output[],
+    preRegex: Output[],
+    postRegex: Output[],
     isValid: boolean
 }
 
@@ -28,12 +29,6 @@ export interface ParserResults{
 export interface ActionToken{
     shift: String,
     reduce: String
-}
-
-export interface BNF{
-    expression: String,
-    value: String,
-    action: String
 }
 
 export interface OwlAction{

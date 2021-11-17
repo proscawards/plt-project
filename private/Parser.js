@@ -1,33 +1,12 @@
 "use strict";
-/*
-
-Terminal:
-KEYWORD -> hoot|hu|woo
-
-Production Rules:
-<EXP> -> KEYWORD
-<EXP> -> <EXP>
-<EXP> -> <EXP> <EXP>
-<EXP> -> <EXP> <EXP> <EXP>
-<EXP> -> <EXP> <EXP> <EXP> <EXP>
-<EXP> -> <EXP> <EXP> <EXP> <EXP> <EXP>
-
-An owl can chirp up to five times in a row.
-*/
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Parser = void 0;
 var Token_1 = require("./Token");
 var Action_1 = require("./Action");
-var BNF_json_1 = __importDefault(require("./BNF.json"));
 var chalk = require("chalk");
 var Parser = /** @class */ (function () {
-    function Parser(input, output, isInputValid) {
-        this.BNF = BNF_json_1.default;
+    function Parser(input, isInputValid) {
         this.input = input;
-        this.output = output;
         this.isInputValid = isInputValid;
         this.inputStack = Array();
         this.tokenStack = Array();
@@ -73,10 +52,10 @@ var Parser = /** @class */ (function () {
     Parser.prototype.trimInputOnDisplay = function () {
         var display;
         if (this.inputStack.length > 10) {
-            display = this.inputStack.slice(0, 10).join(" ") + "...";
+            display = this.inputStack.slice(0, 10).join(" ") + "...$";
         }
         else {
-            display = this.inputStack.join(" ");
+            display = this.inputStack.join(" ") + "$";
         }
         return display;
     };
@@ -92,7 +71,7 @@ var Parser = /** @class */ (function () {
     };
     //Process token stack
     Parser.prototype.preprocessparserStack = function () {
-        while (this.inputStack.length != 0) {
+        while (!this.isCompleted) {
             this.readStack();
         }
     };
@@ -174,7 +153,14 @@ var Parser = /** @class */ (function () {
         this.tokenStack[1] = this.action.getSingle();
         this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.trimInputOnDisplay(), action: this.action.getDouble() });
         this.tokenStack.pop();
-        this.inputStack.length == 0 ? this.stackOnComplete() : this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.trimInputOnDisplay(), action: this.action.getAction(0) });
+        if (this.inputStack.length != 0) {
+            this.parserStack.push({ stack: "$" + this.tokenStack.join(" "), input: this.trimInputOnDisplay(), action: this.action.getAction(0) });
+        }
+        else {
+            if (!this.scanTokenStack()) {
+                this.stackOnComplete();
+            }
+        }
     };
     //Execute basic shift & reduce based on the current owl's action
     Parser.prototype.doBasicShift = function () {
@@ -202,7 +188,9 @@ var Parser = /** @class */ (function () {
         this.tokenStack.push(this.inputStack[0]);
         this.shiftStack();
         if (this.inputStack.length == 0) {
-            this.stackOnComplete();
+            if (!this.scanTokenStack()) {
+                this.stackOnComplete();
+            }
         }
     };
     //Reduce shift on init when inputs are invalid owl's action
@@ -317,9 +305,7 @@ var Parser = /** @class */ (function () {
     Parser.prototype.scanTokenStack = function () {
         var needles = [this.token.getOwlNoiseVal(0), this.token.getOwlNoiseVal(1), this.token.getOwlNoiseVal(2)];
         var haystack = this.tokenStack;
-        var doesTokenExist = false;
-        needles.every(function (i) { return doesTokenExist = haystack.includes(i); });
-        return doesTokenExist;
+        return needles.some(function (i) { return haystack.some(function (j) { return j === i; }); });
     };
     //Iterate through upcoming inputStack if it's a possible owl action
     //Type: 0-Hoot, 1-Bark, 2-Whistle

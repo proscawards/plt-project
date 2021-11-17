@@ -8,12 +8,12 @@ var Action = /** @class */ (function () {
     }
     Action.prototype.getAction = function (type) { return type == 0 ? this.shift : this.reduce; };
     Action.prototype.getUnknown = function () { return "UNKNOWN"; };
-    Action.prototype.getKeyword = function () { return "KEYWORD"; };
+    Action.prototype.getKeyword = function () { return "<KEYWORD>"; };
     Action.prototype.getSingle = function () { return "<EXP>"; };
     Action.prototype.getDouble = function () { return "<EXP> <EXP>"; };
-    Action.prototype.getWhistle = function () { return "hu woo woo hoot <EXP>"; };
-    Action.prototype.getBark = function () { return "hu hoot <EXP> hoot"; };
-    Action.prototype.getHoot = function () { return "KEYWORD <EXP>"; };
+    Action.prototype.getWhistle = function () { return "<OWL_WHISTLE>"; }; //hu woo woo hoot <KEYWORD>
+    Action.prototype.getBark = function () { return "<OWL_BARK>"; }; //hu hoot <KEYWORD> hoot
+    Action.prototype.getHoot = function () { return "<OWL_HOOT>"; }; //hoot hoot hu <KEYWORD>
     return Action;
 }());
 exports.Action = Action;
