@@ -1,14 +1,19 @@
-Start Symbol:
+Start Symbols:
 <KEYWORD>
+<OWL_HOOT>
+<OWL_BARK>
+<OWL_WHISTLE>
 
-Terminal Symbol:
-{hoot,hu,woo}
+Terminal Symbols: {hoot, hu, woo}
 
-Production Rules: 
-<EXP> => KEYWORD
-<EXP> => <EXP>
-<EXP> => <EXP> <EXP>
-<EXP> => <OWL_HOOT> | <OWL_BARK> | <OWL_WHISTLE>
+Non-terminal Symbols:
+<KEYWORD> => hoot | hu | woo
 <OWL_HOOT> => hoot hoot hu <KEYWORD>
 <OWL_BARK> => hu hoot <KEYWORD> hoot
 <OWL_WHISTLE> => hu woo woo hoot <KEYWORD>
+
+Production Rules: 
+<EXP> => <KEYWORD>
+<EXP> => <EXP>
+<EXP> => <EXP> <EXP>
+<EXP> => <OWL_HOOT> | <OWL_BARK> | <OWL_WHISTLE>

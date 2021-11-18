@@ -98,10 +98,7 @@ export class Parser{
             this.parserStack.push({stack: "$", input: this.trimInputOnDisplay(), action: this.action.getAction(0)});
             this.tokenStack.push(this.inputStack[0]);
             this.shiftStack();
-            if (this.scanUpcomingInput(true, 0) || this.scanUpcomingInput(true, 1) || this.scanUpcomingInput(true, 2)){
-                this.parserStack.push({stack: "$"+this.tokenStack.join(" "), input: this.trimInputOnDisplay(), action: this.action.getAction(0)});
-            }
-            else{
+            if (!this.scanUpcomingInput(true, 0) && !this.scanUpcomingInput(true, 1) && !this.scanUpcomingInput(true, 2)){
                 this.reduceShiftOnInit();
             }
         }
@@ -134,30 +131,22 @@ export class Parser{
     }
 
     readMultiple(){
-        if (this.tokenStack[1] == this.token.getOwlNoiseVal(0) ||
-            this.tokenStack[1] == this.token.getOwlNoiseVal(1) || 
-            this.tokenStack[1] == this.token.getOwlNoiseVal(2)){
-            if (this.tokenStack[0] == this.action.getSingle()){
-                if (this.scanUpcomingInput(false, 1)){
-                    this.stackOnShift();
-                    this.isOwlBarking(1);
-                }
-                else if (this.scanUpcomingInput(false, 2)){
-                    this.stackOnShift();
-                    this.isOwlWhistling(1);
-                }
-                else if (this.scanUpcomingInput(false, 0)){
-                    this.stackOnShift();
-                    this.isOwlHooting(1);
-                }
-                else{
-                    this.reduceShiftOnKeywordDouble();
-                }
-            }
-            else{
-                this.reduceShiftOnKeywordDouble();
-            }
+        //Owl is going to bark(?)
+        if (this.scanUpcomingInput(false, 1)){
+            this.stackOnShift();
+            this.isOwlBarking(1);
         }
+        //Owl is going to whistle(?)
+        else if (this.scanUpcomingInput(false, 2)){
+            this.stackOnShift();
+            this.isOwlWhistling(1);
+        }
+        //Owl is going to hoot(?)
+        else if (this.scanUpcomingInput(false, 0)){
+            this.stackOnShift();
+            this.isOwlHooting(1);
+        }
+        //Owl is definitely not going to hoot at this point '-'
         else{
             this.reduceShiftOnKeywordDouble();
         }
